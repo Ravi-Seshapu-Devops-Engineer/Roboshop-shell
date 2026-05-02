@@ -1,4 +1,4 @@
-#!/bin bash
+#!/bin/bash
 
 USERID=$(id -u)
 LOGS_FOLDER="/var/log/Roboshop-shell"
@@ -20,14 +20,14 @@ validate(){
     echo -e "$R $2 is failed $N" | tee -a $LOGS_FILE
     exit 1
   else
-    echo e "$G $2 is Success $N" | tee -a $LOGS_FILE
+    echo -e "$G $2 is Success $N" | tee -a $LOGS_FILE
   fi
 }
 
 cp mongo.repo /etc/yum.repos.d/mongo.repo
 validate $? "copying mongo repo"
 
-dnf install mongodb-org -y & >>$LOGS_FILE
+dnf install mongodb-org -y &>>$LOGS_FILE
 validate $? "Installing monfodb sever"
 
 systemctl enable mongod &>>$LOGS_FILE
