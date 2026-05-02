@@ -7,6 +7,8 @@ R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
+SCRIPT_DIR=$PWD
+MONGODB_HOST=mongodb.seshapudevops.online
 
 if [ $USERID -ne 0 ]; then
   echo -e "$R run the script with root user access $N" | tee -a $LOGS_FILE
@@ -50,13 +52,16 @@ validate $? "Downloading the code"
 cd /app &>>$LOGS_FILE
 validate $? "directory changed to app"
 
+rm -rf /app/* &>>$LOGS_FILE
+validate $? "Removing the existing code"
+
 unzip /tmp/catalogue.zip &>>$LOGS_FILE
 validate $? "Unzipping the code"
 
 npm install &>>$LOGS_FILE
 validate $? "installing node package manager"
 
-cp catalogue.service /etc/systemd/system/catalogue.service &>>$LOGS_FILE
+cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service &>>$LOGS_FILE
 validate $? "creating systemctl service"
 
 systemctl daemon-reload &>>$LOGS_FILE
@@ -67,5 +72,20 @@ validate $? "enabling catalogue"
 
 systemctl start catalogue &>>$LOGS_FILE
 validate $? "catalogue started"
+
+cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
+dnf install mongodb-mongosh -y &>>$LOGS_FILE
+
+INDEX=$(mongosh --host $MONGODB_HOST --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
+
+if [ $INDEX -le 0 ]; then
+  mongosh --host $MONGODB_HOST </app/db/master-data.js &>>$LOGS_FILE
+  validate $? "Loading products"
+else
+  echo -e "Products already loaded $Y skipping $N"
+fi
+
+systemctl restart catalogue
+validate $? "Catalogue restart"
 
 
