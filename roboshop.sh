@@ -3,6 +3,7 @@
 AMI_ID=ami-0220d79f3f480ecf5
 SG_ID=sg-0ff061d19a895a55d
 DOMAIN_NAME=seshapudevops.online
+ZONE_ID=Z0022204M5BRA4JXKTT1
 
 for instance in $@
 do
@@ -29,4 +30,22 @@ do
   fi
   echo "IP_Address: $IP"
 
+  aws route53 change-resource-record-sets \
+  --hosted-zone-id $ZONE_ID \
+  --change-batch '{
+    "Changes": [
+      {
+        "Action": "UPSERT",
+        "ResourceRecordSet": {
+          "Name": "'$DOMAIN_NAME'",
+          "Type": "A",
+          "TTL": 1,
+          "ResourceRecords": [
+            { "Value": "'$IP'" }
+          ]
+        }
+      }
+    ]
+  }'
+  echo "Record updated for $instance"
 done
