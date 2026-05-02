@@ -56,7 +56,7 @@ validate $? "Unzipping the code"
 pip3 install -r requirements.txt
 validate $? "Installing "
 
-cp $SCRIPT_DIR/payment.service vim /etc/systemd/system/payment.service &>>$LOGS_FILE
+cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service &>>$LOGS_FILE
 validate $? "creating systemctl service"
 
 systemctl daemon-reload &>>$LOGS_FILE
